@@ -15,7 +15,7 @@ class RandomBot(BaseBot):
     # Pick one of the possible turns at random
     @staticmethod
     def get_move(bot_game_state):
-        possible_moves = bot_game_state.get_all_valid_moves
+        possible_moves = bot_game_state.get_all_valid_moves()
         if len(possible_moves) > 0:
             shuffle(possible_moves)
             return possible_moves.pop()

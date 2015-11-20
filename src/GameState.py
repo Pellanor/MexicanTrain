@@ -12,7 +12,7 @@ class GameState:
         self.trains = []
         self.players = []
         self.played = []
-        self.play_count = {i: 0 for i in range(13)}
+        self.played_count = {i: 0 for i in range(13)}
         self.dominoes = []
         self.round_over = False
         for i in range(player_count):

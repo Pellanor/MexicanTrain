@@ -25,6 +25,6 @@ class GameSystem:
     def place_domino(game_state, train, domino, player):
         if train.add_domino(domino, player):
             player.dominoes.remove(domino)
-            game_state.play_count[domino.left] += 1
-            game_state.play_count[domino.right] += 1
+            game_state.played_count[domino.left] += 1
+            game_state.played_count[domino.right] += 1
             game_state.played.append(domino)

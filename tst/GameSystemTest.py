@@ -68,9 +68,9 @@ class GameSystemTest(unittest.TestCase):
         GameSystem.place_domino(game_state, train, domino, player)
         self.assertEqual(0, len(player.dominoes))
         self.assertEqual(domino, game_state.played.pop())
-        self.assertEqual(1, game_state.play_count[2])
-        self.assertEqual(1, game_state.play_count[3])
-        self.assertEqual(0, game_state.play_count[0])
+        self.assertEqual(1, game_state.played_count[2])
+        self.assertEqual(1, game_state.played_count[3])
+        self.assertEqual(0, game_state.played_count[0])
 
 
 

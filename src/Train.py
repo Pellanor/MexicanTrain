@@ -44,3 +44,9 @@ class Train:
 
     def make_public(self):
         self.private = False
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.train_id == other.train_id
+
+    def __hash__(self):
+        return hash(self.train_id)

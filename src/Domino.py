@@ -5,7 +5,10 @@ class Domino:
         self.right = right
 
     def __eq__(self, other):
-        return self.left == other.left and self.right == other.right
+        return isinstance(other, self.__class__) and self.left == other.left and self.right == other.right
+
+    def __hash__(self):
+        return self.left * 100 + self.right
 
     def __str__(self):
         return "(" + str(self.left) + ", " + str(self.right) + ")"

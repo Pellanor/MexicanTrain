@@ -8,7 +8,10 @@ class Player:
         self.bot = bot
 
     def __eq__(self, other):
-        return other is not None and self.player_id == other.player_id
+        return isinstance(other, self.__class__) and self.player_id == other.player_id
+
+    def __hash__(self):
+        return hash(self.player_id)
 
     def give_domino(self, domino):
         self.dominoes.append(domino)

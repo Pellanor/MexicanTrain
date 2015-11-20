@@ -4,7 +4,7 @@ from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
 from src.Train import Train
-from src.bots.BotGameState import BotTrain, BotPlayer, BotDomino, BotGameState, Move
+from src.bots.BotGameState import BotTrain, BotPlayer, BotDomino, BotGameState, BotMove
 from tst.bots.TestBot import TestBot
 
 
@@ -137,12 +137,18 @@ class BotGameStateTest(unittest.TestCase):
         self.assertIn(bot_trains[4], bgs.playable_trains)
         self.assertIn(bot_trains[5], bgs.playable_trains)
 
-        moves = bgs.get_all_valid_moves
+        moves = bgs.get_all_valid_moves()
         self.assertEqual(6, len(moves))
-        self.assertIn(Move(0, 0), moves)
-        self.assertIn(Move(1, 4), moves)
-        self.assertIn(Move(3, 2), moves)
-        self.assertIn(Move(6, 4), moves)
-        self.assertIn(Move(6, 4), moves)
-        self.assertIn(Move(7, 2), moves)
+        self.assertIn(BotMove(bgs.dominoes[0], bot_trains[0]), moves)
+        self.assertIn(BotMove(bgs.dominoes[1], bot_trains[4]), moves)
+        self.assertIn(BotMove(bgs.dominoes[3], bot_trains[2]), moves)
+        self.assertIn(BotMove(bgs.dominoes[6], bot_trains[4]), moves)
+        self.assertIn(BotMove(bgs.dominoes[6], bot_trains[4]), moves)
+        self.assertIn(BotMove(bgs.dominoes[7], bot_trains[2]), moves)
+
+        self.assertEqual(game_state.played_count, bgs.played_count)
+
+        bgs.place_domino(bgs.dominoes[0], bgs.playable_trains[0])
+        self.assertIn(BotMove(bgs.dominoes[0], bot_trains[0]), bgs.moves)
+
 
