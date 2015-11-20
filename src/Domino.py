@@ -15,3 +15,11 @@ class Domino:
 
     def is_double(self):
         return self.left == self.right
+
+    def other_number(self, number):
+        if self.left == number:
+            return self.right
+        elif self.right == number:
+            return self.left
+        else:
+            return None

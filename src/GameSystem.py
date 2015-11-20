@@ -1,21 +1,30 @@
-import copy
-
-
 class GameSystem:
+    @staticmethod
+    def draw_domino(game_state, player):
+        if len(game_state.dominoes) == 0:
+            return False
+        player.give_domino(game_state.dominoes.pop())
+        return True
 
-    def __init__(self, game):
-        self.__game = game
+    @staticmethod
+    def draw_domino_and_check_for_start(game_state, player, starting_domino):
+        if len(game_state.dominoes) == 0:
+            raise RuntimeError(
+                'Ran out of dominoes while trying to find the starting player. Did we miss the starting tile? ' +
+                str(starting_domino))
+        d = game_state.dominoes.pop()
+        if d == starting_domino:
+            if len(game_state.dominoes) > 0:
+                player.give_domino(game_state.dominoes.pop())
+            return True
 
-    def place_domino(self, train, domino, player):
-        train.add_domino(domino, player)
+        player.dominoes.append(d)
+        return False
 
-    def get_playable_trains(self, player):
-        playable_trains = []
-        for train in self.__game.trains:
-            if train.can_player_add(player):
-                playable_trains.append(train)
-        return playable_trains
-
-    def get_all_trains(self):
-        return self.__game.trains
-
+    @staticmethod
+    def place_domino(game_state, train, domino, player):
+        if train.add_domino(domino, player):
+            player.dominoes.remove(domino)
+            game_state.play_count[domino.left] += 1
+            game_state.play_count[domino.right] += 1
+            game_state.played.append(domino)

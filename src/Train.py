@@ -4,7 +4,7 @@ class Train:
         self.owner = player
         self.private = player is not None
         self.requires = initial
-        self.demand_satisfaction = False
+        self.demands_satisfaction = False
         self.cars = []
 
     def add_domino(self, domino, player):
@@ -37,7 +37,7 @@ class Train:
 
     def __append_domino(self, domino):
         self.cars.append(domino)
-        self.demand_satisfaction = (domino.left == domino.right)
+        self.demands_satisfaction = (domino.left == domino.right)
 
     def make_private(self):
         self.private = True

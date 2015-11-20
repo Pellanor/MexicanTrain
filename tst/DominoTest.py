@@ -15,3 +15,9 @@ class DominoTest(unittest.TestCase):
         d2 = Domino(2, 3)
         self.assertEqual(d1, d2)
 
+    def test_other(self):
+        d = Domino(2,3)
+        self.assertEqual(3, d.other_number(2))
+        self.assertEqual(2, d.other_number(3))
+        self.assertIsNone(d.other_number(42))
+
