@@ -1,14 +1,12 @@
 from random import shuffle
 
 from src.Domino import Domino
-from src.GameSystem import GameSystem
 from src.Player import Player
 from src.Train import Train
-from src.bots.RandomBot import RandomBot
 
 
 class GameState:
-    def __init__(self, player_count):
+    def __init__(self, player_count: int):
         self.trains = []
         self.players = []
         self.played = []
@@ -16,7 +14,8 @@ class GameState:
         self.dominoes = []
         self.round_over = False
         for i in range(player_count):
-            self.players.append(Player(i, RandomBot()))
+            from src.bots.BotFactory import get_random_bot
+            self.players.append(Player(i, get_random_bot()))
 
         self.current_player = None
 
@@ -29,9 +28,9 @@ class GameState:
 
         for count in range(starting_dominoes_count(len(self.players))):
             for player in self.players:
-                GameSystem.draw_domino(self, player)
+                draw_domino(self, player)
 
-    def start_round(self, round_number):
+    def start_round(self, round_number: int):
         self.deal()
         starting_domino = Domino(round_number, round_number)
         self.current_player = self.get_starting_player(starting_domino)
@@ -41,24 +40,24 @@ class GameState:
             self.trains.append(Train(train_id, round_number, player))
         self.trains.append(Train(len(self.trains), round_number, None))
 
-    def get_starting_player(self, starting_domino):
+    def get_starting_player(self, starting_domino: Domino):
         starting_player = None
         for player in self.players:
             if player.dominoes.count(starting_domino) > 0:
                 player.dominoes.remove(starting_domino)
-                GameSystem.draw_domino(self, player)
+                draw_domino(self, player)
                 starting_player = player
         while starting_player is None:
             for player in self.players:
                 if len(self.dominoes) > 0:
-                    if GameSystem.draw_domino_and_check_for_start(self, player, starting_domino):
+                    if draw_domino_and_check_for_start(self, player, starting_domino):
                         starting_player = player
 
         self.played.append(starting_domino)
         return starting_player
 
 
-def starting_dominoes_count(player_count):
+def starting_dominoes_count(player_count: int):
     if 2 <= player_count <= 4:
         return 15
     elif 5 <= player_count <= 6:
@@ -67,3 +66,33 @@ def starting_dominoes_count(player_count):
         return 10
     else:
         return False
+
+
+def draw_domino(game_state: GameState, player: Player):
+    if len(game_state.dominoes) == 0:
+        return False
+    player.give_domino(game_state.dominoes.pop())
+    return True
+
+
+def draw_domino_and_check_for_start(game_state: GameState, player: Player, starting_domino: Domino):
+    if len(game_state.dominoes) == 0:
+        raise RuntimeError(
+            'Ran out of dominoes while trying to find the starting player. Did we miss the starting tile? ' +
+            str(starting_domino))
+    d = game_state.dominoes.pop()
+    if d == starting_domino:
+        if len(game_state.dominoes) > 0:
+            player.give_domino(game_state.dominoes.pop())
+        return True
+
+    player.dominoes.append(d)
+    return False
+
+
+def place_domino(game_state: GameState, train: Train, domino: Domino, player: Player):
+    if train.add_domino(domino, player):
+        player.dominoes.remove(domino)
+        game_state.played_count[domino.left] += 1
+        game_state.played_count[domino.right] += 1
+        game_state.played.append(domino)

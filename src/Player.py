@@ -1,17 +1,22 @@
+from collections import namedtuple
+
+PlayerIdentity = namedtuple('PlayerIdentity', ['id'])
+
+
 class Player:
     def __init__(self, player_id, bot):
         self.dominoes = []
-        self.player_id = player_id
+        self.identity = PlayerIdentity(player_id)
         self.turn = 0
         self.victories = 0
         self.score = 0
         self.bot = bot
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.player_id == other.player_id
+        return isinstance(other, self.__class__) and self.identity == other.identity
 
     def __hash__(self):
-        return hash(self.player_id)
+        return hash(self.identity)
 
     def give_domino(self, domino):
         self.dominoes.append(domino)

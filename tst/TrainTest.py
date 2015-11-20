@@ -10,6 +10,15 @@ class TrainTest(unittest.TestCase):
     player_two = Player(2, TestBot())
     player_five = Player(5, TestBot())
 
+    def test_mexican(self):
+        t1 = Train(1, 1, None)
+        self.assertTrue(t1.identity.mexican)
+        self.assertFalse(t1.private)
+
+        t2 = Train(2, 2, self.player_two)
+        self.assertFalse(t2.identity.mexican)
+        self.assertTrue(t2.private)
+
     def test_demands_satisfaction(self):
         t = Train(5, 5, self.player_five)
         d = Domino(5, 5)

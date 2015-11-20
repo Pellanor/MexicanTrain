@@ -4,7 +4,10 @@ from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
 from src.Train import Train
-from src.bots.BotGameState import BotTrain, BotPlayer, BotDomino, BotGameState, BotMove
+from src.bots.state.BotGameState import BotGameState, BotMove
+from src.bots.state.BotTrain import BotTrain
+from src.bots.state.BotPlayer import BotPlayer
+from src.bots.state.BotDomino import BotDomino
 from tst.bots.TestBot import TestBot
 
 
@@ -16,25 +19,25 @@ class BotGameStateTest(unittest.TestCase):
         required = 6
         p = Player(player_id, TestBot())
         t = Train(train_id, required, p)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain(t, p)
         self.assertTrue(bt.can_add)
-        self.assertTrue(bt.owned)
-        self.assertFalse(bt.mexican)
-        self.assertEqual(player_id, bt.owner_id)
+        self.assertTrue(bt.am_owner)
+        self.assertFalse(bt.identity.mexican)
+        self.assertEqual(p, bt.identity.owner)
         self.assertEqual(required, bt.requires)
         bt.cars.append(Domino(2, 3))
         self.assertEqual(0, len(t.cars))
 
         d1 = Domino(6, 6)
         t.add_domino(d1, p)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain( t, p)
         self.assertTrue(bt.demands_satisfaction)
         self.assertEqual(6, bt.requires)
         self.assertEqual(d1, bt.cars.pop())
 
         d2 = Domino(12, 6)
         t.add_domino(d2, p)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain( t, p)
         self.assertFalse(bt.demands_satisfaction)
         self.assertEqual(12, bt.requires)
         self.assertEqual(d2, bt.cars.pop())
@@ -47,11 +50,11 @@ class BotGameStateTest(unittest.TestCase):
         p = Player(player_id, TestBot())
         o = Player(owner_id, TestBot())
         t = Train(train_id, required, o)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain(t, p)
         self.assertFalse(bt.can_add)
-        self.assertFalse(bt.owned)
-        self.assertFalse(bt.mexican)
-        self.assertEqual(owner_id, bt.owner_id)
+        self.assertFalse(bt.am_owner)
+        self.assertFalse(bt.identity.mexican)
+        self.assertEqual(o, bt.identity.owner)
 
     def test_bot_train_public(self):
         player_id = 42
@@ -62,11 +65,11 @@ class BotGameStateTest(unittest.TestCase):
         o = Player(owner_id, TestBot())
         t = Train(train_id, required, o)
         t.make_public()
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain(t, p)
         self.assertTrue(bt.can_add)
-        self.assertFalse(bt.owned)
-        self.assertFalse(bt.mexican)
-        self.assertEqual(owner_id, bt.owner_id)
+        self.assertFalse(bt.am_owner)
+        self.assertFalse(bt.identity.mexican)
+        self.assertEqual(o, bt.identity.owner)
 
     def test_bot_train_mexican(self):
         player_id = 42
@@ -74,11 +77,11 @@ class BotGameStateTest(unittest.TestCase):
         required = 6
         p = Player(player_id, TestBot())
         t = Train(train_id, required, None)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain(t, p)
         self.assertTrue(bt.can_add)
-        self.assertFalse(bt.owned)
-        self.assertTrue(bt.mexican)
-        self.assertEqual(None, bt.owner_id)
+        self.assertFalse(bt.am_owner)
+        self.assertTrue(bt.identity.mexican)
+        self.assertEqual(None, bt.identity.owner)
 
     def test_bot_player(self):
         player_id = 42
@@ -87,7 +90,7 @@ class BotGameStateTest(unittest.TestCase):
         train_id = 9001
         required = 6
         t = Train(train_id, required, p)
-        bt = BotTrain(train_id, t, p)
+        bt = BotTrain(t, p)
         bp = BotPlayer(p, bt)
         self.assertEqual(player_id, bp.player_id)
         self.assertEqual(len(p.dominoes), bp.tile_count)
@@ -127,7 +130,7 @@ class BotGameStateTest(unittest.TestCase):
         bgs = BotGameState(game_state, player)
         bot_trains = []
         for train in game_state.trains:
-            bot_trains.append(BotTrain(train.train_id, train, train.owner))
+            bot_trains.append(BotTrain(train, train.identity.owner))
 
         self.assertEqual(bot_trains[0], bgs.my_train)
         self.assertIn(bot_trains[1], bgs.other_trains)

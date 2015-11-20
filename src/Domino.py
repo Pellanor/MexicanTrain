@@ -1,6 +1,3 @@
-import operator
-
-
 class Domino(tuple):
     @property
     def left(self):
@@ -9,18 +6,16 @@ class Domino(tuple):
     @property
     def right(self):
         return self[2]
+
     __slots__ = ()
     # An immutable and unique marker, used to make sure different
     # tuple subclasses are not equal to each other.
     _MARKER = object()
 
-    left_numb = property(operator.itemgetter(1))
-    right_numb = property(operator.itemgetter(2))
-
-    def __init__(self, left, right):
+    def __init__(self, left: int, right: int):
         super().__init__()
 
-    def __new__(cls, left, right):
+    def __new__(cls, left: int, right: int):
         return tuple.__new__(cls, (cls._MARKER, left, right))
 
     def __repr__(self):

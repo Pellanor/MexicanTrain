@@ -1,8 +1,7 @@
 class Train:
-    def __init__(self, train_id, initial, player):
-        self.train_id = train_id
-        self.owner = player
-        self.private = player is not None
+    def __init__(self, train_id, initial, owner):
+        self.identity = TrainIdentity(train_id, owner)
+        self.private = not self.identity.mexican
         self.requires = initial
         self.demands_satisfaction = False
         self.cars = []
@@ -10,7 +9,7 @@ class Train:
     def add_domino(self, domino, player):
         if self.can_player_add(player):
             if self.__append_left(domino) or self.__append_right(domino):
-                if player == self.owner:
+                if player == self.identity.owner:
                     self.make_private()
                 return True
             else:
@@ -19,7 +18,7 @@ class Train:
             return False
 
     def can_player_add(self, player):
-        return self.private is False or self.owner is None or self.owner == player
+        return self.private is False or self.identity.owner == player
 
     def __append_left(self, domino):
         if self.requires == domino.left:
@@ -50,3 +49,28 @@ class Train:
 
     def __hash__(self):
         return hash(self.train_id)
+
+
+class TrainIdentity(tuple):
+    @property
+    def train_id(self):
+        return self[1]
+
+    @property
+    def owner(self):
+        return self[2]
+
+    @property
+    def mexican(self):
+        return self[3]
+
+    __slots__ = ()
+    # An immutable and unique marker, used to make sure different
+    # tuple subclasses are not equal to each other.
+    _MARKER = object()
+
+    def __new__(cls, train_id, owner):
+        return tuple.__new__(cls, (cls._MARKER, train_id, owner, owner is None))
+
+    def __init__(self, train_id, owner):
+        super().__init__()
