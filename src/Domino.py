@@ -1,14 +1,30 @@
-class Domino:
+import operator
+
+
+class Domino(tuple):
+    @property
+    def left(self):
+        return self[1]
+
+    @property
+    def right(self):
+        return self[2]
+    __slots__ = ()
+    # An immutable and unique marker, used to make sure different
+    # tuple subclasses are not equal to each other.
+    _MARKER = object()
+
+    left_numb = property(operator.itemgetter(1))
+    right_numb = property(operator.itemgetter(2))
 
     def __init__(self, left, right):
-        self.left = left
-        self.right = right
+        super().__init__()
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.left == other.left and self.right == other.right
+    def __new__(cls, left, right):
+        return tuple.__new__(cls, (cls._MARKER, left, right))
 
-    def __hash__(self):
-        return self.left * 100 + self.right
+    def __repr__(self):
+        return '%s(%r, %r)' % (self.__class__.__name__, self.left, self.right)
 
     def __str__(self):
         return "(" + str(self.left) + ", " + str(self.right) + ")"
@@ -16,10 +32,11 @@ class Domino:
     def contains(self, number):
         return self.left == number or self.right == number
 
+    @property
     def is_double(self):
         return self.left == self.right
 
-    def other_number(self, number):
+    def get_other_number(self, number):
         if self.left == number:
             return self.right
         elif self.right == number:

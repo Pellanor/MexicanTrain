@@ -33,7 +33,7 @@ class BotGameState:
 
     def make_move(self, bot_move):
         self.moves.append(bot_move)
-        bot_move.bot_train.requires = bot_move.bot_domino.value.other_number(bot_move.bot_train.requires)
+        bot_move.bot_train.requires = bot_move.bot_domino.value.get_other_number(bot_move.bot_train.requires)
 
     def get_all_valid_moves(self):
         valid_moves = set()
