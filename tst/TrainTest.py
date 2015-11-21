@@ -24,12 +24,24 @@ class TrainTest(unittest.TestCase):
         d = Domino(5, 5)
         t.add_domino(d, self.player_five)
         self.assertTrue(t.demands_satisfaction)
+        self.assertFalse(t.private)
 
     def test_does_not_demand_satisfaction(self):
         t = Train(2, 2, self.player_two)
         d = Domino(2, 3)
         t.add_domino(d, self.player_two)
         self.assertFalse(t.demands_satisfaction)
+        self.assertTrue(t.private)
+
+    def test_provide_satisfaction(self):
+        t = Train(5, 5, self.player_five)
+        d = Domino(5, 5)
+        t.add_domino(d, self.player_five)
+        self.assertTrue(t.demands_satisfaction)
+        self.assertFalse(t.private)
+        t.add_domino(Domino(3, 5), self.player_five)
+        self.assertFalse(t.demands_satisfaction)
+        self.assertTrue(t.private)
 
     def test_can_add_domino(self):
         t = Train(2, 2, self.player_two)

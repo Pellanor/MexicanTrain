@@ -151,7 +151,9 @@ class BotGameStateTest(unittest.TestCase):
 
         self.assertEqual(game_state.played_count, bgs.played_count)
 
-        bgs.place_domino(bgs.dominoes[0], bgs.playable_trains[0])
-        self.assertIn(BotMove(bgs.dominoes[0], bot_trains[0]), bgs.moves)
+        d = bgs.dominoes[0]
+        t = bgs.playable_trains[0]
+        bgs.place_domino(d, t)
+        self.assertIn(BotMove(d, t), bgs.moves)
 
 

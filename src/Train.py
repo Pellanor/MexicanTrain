@@ -2,14 +2,16 @@ class Train:
     def __init__(self, train_id, initial, owner):
         self.identity = TrainIdentity(train_id, owner)
         self.private = not self.identity.mexican
-        self.requires = initial
+        self.initial = self.requires = initial
         self.demands_satisfaction = False
         self.cars = []
 
     def add_domino(self, domino, player):
         if self.can_player_add(player):
             if self.__append_left(domino) or self.__append_right(domino):
-                if player == self.identity.owner:
+                if self.private and self.demands_satisfaction:
+                    self.make_public()
+                elif player == self.identity.owner:
                     self.make_private()
                 return True
             else:
@@ -45,10 +47,24 @@ class Train:
         self.private = False
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.train_id == other.train_id
+        return isinstance(other, self.__class__) and self.identity == other.identity
 
     def __hash__(self):
-        return hash(self.train_id)
+        return hash(self.identity)
+
+    def __repr__(self):
+        return "Train {}".format(self.identity)
+
+    def __str__(self):
+        if self.identity.mexican:
+            output = "Mexican Train: "
+        else:
+            output = "{}'s Train: ".format(self.identity.owner.identity.id)
+        left = self.initial
+        for domino in self.cars:
+            output += "{} ".format(domino.draw(left))
+            left = domino.get_other_number(left)
+        return output
 
 
 class TrainIdentity(tuple):

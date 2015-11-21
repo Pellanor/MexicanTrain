@@ -24,13 +24,12 @@ class RandomBot(BaseBot):
 
     # Get a list of moves to take for the turn
     def get_moves(self, game_state: BotGameState):
-        moves_to_take = []
         move = self.get_move(game_state)
         if self.turn == 1:
             while move:
-                moves_to_take.append(move)
+                game_state.make_move(move)
                 move = self.get_move(game_state)
         else:
             if move:
-                moves_to_take.append(move)
-        return moves_to_take
+                game_state.make_move(move)
+        return game_state.moves

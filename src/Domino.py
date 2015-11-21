@@ -19,10 +19,15 @@ class Domino(tuple):
         return tuple.__new__(cls, (cls._MARKER, left, right))
 
     def __repr__(self):
-        return '%s(%r, %r)' % (self.__class__.__name__, self.left, self.right)
+        return self.draw(self.left)
 
     def __str__(self):
-        return "(" + str(self.left) + ", " + str(self.right) + ")"
+        return self.draw(self.left)
+
+    def draw(self, first):
+        if self.is_double:
+            return "[ {} ]".format(self.left)
+        return "[{}|{}]".format(first, self.get_other_number(first))
 
     def contains(self, number):
         return self.left == number or self.right == number

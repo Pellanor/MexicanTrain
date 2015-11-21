@@ -19,3 +19,6 @@ class BotTrain:
 
     def __hash__(self):
         return hash(self.identity)
+
+    def __repr__(self):
+        return "BotTrain {}".format(self.identity)

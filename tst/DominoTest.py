@@ -30,3 +30,11 @@ class DominoTest(unittest.TestCase):
         self.assertEqual(2, d.get_other_number(3))
         self.assertIsNone(d.get_other_number(42))
 
+    def test_draw(self):
+        d = Domino(2, 3)
+        self.assertEqual("[2|3]", d.draw(d.left))
+        self.assertEqual("[3|2]", d.draw(d.right))
+        dd = Domino(6,6)
+        self.assertEqual("[ 6 ]", dd.draw(d.right))
+
+

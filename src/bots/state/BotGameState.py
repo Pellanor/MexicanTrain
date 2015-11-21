@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
 from src.bots.state.BotDomino import BotDomino
@@ -25,12 +26,15 @@ class BotGameState:
         self.dominoes_for_number = {i: [] for i in range(13)}
         self.dominoes = []
         for domino_id, domino in enumerate(player.dominoes):
+            self.draw_domino(domino_id, domino)
+        self.played_count = game.played_count
+        self.moves = []
+
+    def draw_domino(self, domino_id: int, domino: Domino):
             bd = BotDomino(domino_id, domino)
             self.dominoes.append(bd)
             self.dominoes_for_number[domino.left].append(bd)
             self.dominoes_for_number[domino.right].append(bd)
-        self.played_count = game.played_count
-        self.moves = []
 
     def get_unplayed_count(self, number: int):
         return 13 - self.played_count[number]
@@ -41,6 +45,9 @@ class BotGameState:
     def make_move(self, bot_move: BotMove):
         self.moves.append(bot_move)
         bot_move.train.requires = bot_move.domino.value.get_other_number(bot_move.train.requires)
+        self.dominoes.remove(bot_move.domino)
+        self.dominoes_for_number[bot_move.domino.value.left].remove(bot_move.domino)
+        self.dominoes_for_number[bot_move.domino.value.right].remove(bot_move.domino)
 
     def get_all_valid_moves(self):
         valid_moves = set()
@@ -50,9 +57,9 @@ class BotGameState:
                 for bot_domino in self.dominoes_for_number[bot_train.requires]:
                     valid_moves.add(BotMove(bot_domino, bot_train))
                 # Only one train can demand satisfaction at a time, no other moves are possible
-                return valid_moves
+                return list(valid_moves)
         # Satisfaction not required. Add all possible moves.
         for bot_train in self.playable_trains:
             for bot_domino in self.dominoes_for_number[bot_train.requires]:
                 valid_moves.add(BotMove(bot_domino, bot_train))
-        return valid_moves
+        return list(valid_moves)
