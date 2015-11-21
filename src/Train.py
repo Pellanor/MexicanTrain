@@ -1,3 +1,7 @@
+from src.Domino import Domino
+from src.Player import Player
+
+
 class Train:
     def __init__(self, train_id, initial, owner):
         self.identity = TrainIdentity(train_id, owner)
@@ -6,7 +10,10 @@ class Train:
         self.demands_satisfaction = False
         self.cars = []
 
-    def add_domino(self, domino, player):
+    def is_valid_play(self, domino: Domino, player: Player):
+        return self.can_player_add(player) and domino.contains(self.requires)
+
+    def add_domino(self, domino: Domino, player: Player):
         if self.can_player_add(player):
             if self.__append_left(domino) or self.__append_right(domino):
                 if self.private and self.demands_satisfaction:
@@ -19,24 +26,24 @@ class Train:
         else:
             return False
 
-    def can_player_add(self, player):
+    def can_player_add(self, player: Player):
         return self.private is False or self.identity.owner == player
 
-    def __append_left(self, domino):
+    def __append_left(self, domino: Domino):
         if self.requires == domino.left:
             self.__append_domino(domino)
             self.requires = domino.right
             return True
         return False
 
-    def __append_right(self, domino):
+    def __append_right(self, domino: Domino):
         if self.requires == domino.right:
             self.__append_domino(domino)
             self.requires = domino.left
             return True
         return False
 
-    def __append_domino(self, domino):
+    def __append_domino(self, domino: Domino):
         self.cars.append(domino)
         self.demands_satisfaction = (domino.left == domino.right)
 
@@ -59,7 +66,7 @@ class Train:
         if self.identity.mexican:
             output = "Mexican Train: "
         else:
-            output = "{}'s Train: ".format(self.identity.owner.identity.id)
+            output = "Player {}'s Train: ".format(self.identity.owner.identity.id)
         left = self.initial
         for domino in self.cars:
             output += "{} ".format(domino.draw(left))

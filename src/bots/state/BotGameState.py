@@ -28,7 +28,6 @@ class BotGameState:
         for domino_id, domino in enumerate(player.dominoes):
             self.draw_domino(domino_id, domino)
         self.played_count = game.played_count
-        self.moves = []
 
     def draw_domino(self, domino_id: int, domino: Domino):
             bd = BotDomino(domino_id, domino)
@@ -39,12 +38,10 @@ class BotGameState:
     def get_unplayed_count(self, number: int):
         return 13 - self.played_count[number]
 
-    def place_domino(self, domino: BotDomino, train: BotTrain):
-        self.make_move(BotMove(domino, train))
-
-    def make_move(self, bot_move: BotMove):
-        self.moves.append(bot_move)
+    def do_move(self, bot_move: BotMove):
         bot_move.train.requires = bot_move.domino.value.get_other_number(bot_move.train.requires)
+        bot_move.train.demands_satisfaction = bot_move.domino.value.is_double
+
         self.dominoes.remove(bot_move.domino)
         self.dominoes_for_number[bot_move.domino.value.left].remove(bot_move.domino)
         self.dominoes_for_number[bot_move.domino.value.right].remove(bot_move.domino)
