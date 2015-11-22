@@ -43,7 +43,7 @@ class Game:
                         player.can_play = False
                         done = True
                     else:
-                        bot_game_state.draw_domino(len(player.dominoes) - 1, domino)
+                        bot_game_state.draw_domino(domino)
                     drew = True
                 else:
                     done = True

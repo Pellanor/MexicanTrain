@@ -25,17 +25,20 @@ class BotGameState:
             self.all_trains.append(bot_train)
         self.dominoes_for_number = {i: [] for i in range(13)}
         self.dominoes = []
-        for domino_id, domino in enumerate(player.dominoes):
-            self.draw_domino(domino_id, domino)
+        for domino in player.dominoes:
+            self.draw_domino(domino)
         self.played_count = game.played_count
 
-    def draw_domino(self, domino_id: int, domino: Domino):
-            bd = BotDomino(domino_id, domino)
+    def draw_domino(self, domino: Domino):
+            bd = BotDomino(domino)
+            for bot_domino in self.dominoes:  # type: BotDomino
+                bot_domino.add_domino(bd)
+            bd.add_all(self.dominoes)
             self.dominoes.append(bd)
             self.dominoes_for_number[domino.left].append(bd)
             self.dominoes_for_number[domino.right].append(bd)
 
-    def get_unplayed_count(self, number: int):
+    def get_unplayed_count(self, number: int) -> int:
         return 13 - self.played_count[number]
 
     def do_move(self, bot_move: BotMove):

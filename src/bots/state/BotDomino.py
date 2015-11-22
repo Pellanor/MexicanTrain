@@ -1,22 +1,29 @@
 from src.Domino import Domino
 
 
-class BotDomino(tuple):
-    @property
-    def domino_id(self):
-        return self[1]
+class BotDomino:
 
-    @property
-    def value(self):
-        return self[2]
+    def __init__(self, domino: Domino):
+        self.value = domino
+        self.left = []
+        self.right = []
 
-    __slots__ = ()
-    # An immutable and unique marker, used to make sure different
-    # tuple subclasses are not equal to each other.
-    _MARKER = object()
+    def add_domino(self, bot_domino):
+        if bot_domino.value.contains(self.value.left):
+            self.left.append(bot_domino)
+        if bot_domino.value.contains(self.value.right):
+            self.right.append(bot_domino)
 
-    def __new__(cls, domino_id, domino: Domino):
-        return tuple.__new__(cls, (cls._MARKER, domino_id, domino))
+    def add_all(self, dominoes):
+        for bot_domino in dominoes:
+            self.add_domino(bot_domino)
 
-    def __init__(self, domino_id, domino: Domino):
-        super().__init__()
+    def remove_domino(self, bot_domino):
+        if self.left.count(bot_domino) > 0:
+            self.left.remove(bot_domino)
+        if self.right.count(bot_domino) > 0:
+            self.right.remove(bot_domino)
+
+    def play(self):
+        for bot_domino in self.left + self.right:
+            bot_domino.remove_domino(self)

@@ -96,12 +96,6 @@ class BotGameStateTest(unittest.TestCase):
         self.assertEqual(len(p.dominoes), bp.tile_count)
         self.assertEqual(bt, bp.train)
 
-    def test_bot_domino(self):
-        d = Domino(2, 3)
-        bd = BotDomino(5, d)
-        self.assertEqual(5, bd.domino_id)
-        self.assertEqual(d, bd.value)
-
     def test_bot_game_state(self):
         game_state = GameState(5)
         player = game_state.players[0]
