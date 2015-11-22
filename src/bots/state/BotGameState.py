@@ -1,12 +1,14 @@
 from collections import namedtuple
 
+from networkx import Graph
+
 from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
-from src.bots.state.BotDomino import BotDomino
 from src.bots.state.BotTrain import BotTrain
 
 BotMove = namedtuple('BotMove', ['domino', 'train'])
+DominoEdge = namedtuple('DominoEdge', ['domino', 'value'])
 
 
 class BotGameState:
@@ -25,29 +27,38 @@ class BotGameState:
             self.all_trains.append(bot_train)
         self.dominoes_for_number = {i: [] for i in range(13)}
         self.dominoes = []
+        self.graph = Graph()
         for domino in player.dominoes:
             self.draw_domino(domino)
         self.played_count = game.played_count
 
     def draw_domino(self, domino: Domino):
-            bd = BotDomino(domino)
-            for bot_domino in self.dominoes:  # type: BotDomino
-                bot_domino.add_domino(bd)
-            bd.add_all(self.dominoes)
-            self.dominoes.append(bd)
-            self.dominoes_for_number[domino.left].append(bd)
-            self.dominoes_for_number[domino.right].append(bd)
+        left = DominoEdge(domino, domino.left)
+        right = DominoEdge(domino, domino.right)
+        self.graph.add_edge(left, right, domino=domino)
+        for d in self.dominoes:  # type: Domino
+            if d.left == domino.left:
+                self.graph.add_edge(DominoEdge(d, d.left), left)
+            if d.left == domino.right:
+                self.graph.add_edge(DominoEdge(d, d.left), right)
+            if d.right == domino.right:
+                self.graph.add_edge(DominoEdge(d, d.right), right)
+            if d.right == domino.left:
+                self.graph.add_edge(DominoEdge(d, d.right), left)
+        self.dominoes.append(domino)
+        self.dominoes_for_number[domino.left].append(domino)
+        self.dominoes_for_number[domino.right].append(domino)
 
     def get_unplayed_count(self, number: int) -> int:
         return 13 - self.played_count[number]
 
     def do_move(self, bot_move: BotMove):
-        bot_move.train.requires = bot_move.domino.value.get_other_number(bot_move.train.requires)
-        bot_move.train.demands_satisfaction = bot_move.domino.value.is_double
+        bot_move.train.requires = bot_move.domino.get_other_number(bot_move.train.requires)
+        bot_move.train.demands_satisfaction = bot_move.domino.is_double
 
         self.dominoes.remove(bot_move.domino)
-        self.dominoes_for_number[bot_move.domino.value.left].remove(bot_move.domino)
-        self.dominoes_for_number[bot_move.domino.value.right].remove(bot_move.domino)
+        self.dominoes_for_number[bot_move.domino.left].remove(bot_move.domino)
+        self.dominoes_for_number[bot_move.domino.right].remove(bot_move.domino)
 
     def get_all_valid_moves(self):
         valid_moves = set()

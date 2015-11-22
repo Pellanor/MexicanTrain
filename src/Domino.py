@@ -36,6 +36,9 @@ class Domino(tuple):
     def is_double(self):
         return self.left == self.right
 
+    def matches(self, domino):
+        return self.contains(domino.left) or self.contains(domino.right)
+
     def get_other_number(self, number):
         if self.left == number:
             return self.right

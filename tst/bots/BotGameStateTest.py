@@ -1,18 +1,18 @@
 import unittest
 
+from networkx import all_simple_paths, info, edges, nodes
+
 from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
 from src.Train import Train
-from src.bots.state.BotGameState import BotGameState, BotMove
+from src.bots.state.BotGameState import BotGameState, BotMove, DominoEdge
 from src.bots.state.BotTrain import BotTrain
 from src.bots.state.BotPlayer import BotPlayer
-from src.bots.state.BotDomino import BotDomino
 from tst.bots.TestBot import TestBot
 
 
 class BotGameStateTest(unittest.TestCase):
-
     def test_bot_train(self):
         player_id = 42
         train_id = 9001
@@ -30,14 +30,14 @@ class BotGameStateTest(unittest.TestCase):
 
         d1 = Domino(6, 6)
         t.add_domino(d1, p)
-        bt = BotTrain( t, p)
+        bt = BotTrain(t, p)
         self.assertTrue(bt.demands_satisfaction)
         self.assertEqual(6, bt.requires)
         self.assertEqual(d1, bt.cars.pop())
 
         d2 = Domino(12, 6)
         t.add_domino(d2, p)
-        bt = BotTrain( t, p)
+        bt = BotTrain(t, p)
         self.assertFalse(bt.demands_satisfaction)
         self.assertEqual(12, bt.requires)
         self.assertEqual(d2, bt.cars.pop())
@@ -113,13 +113,13 @@ class BotGameStateTest(unittest.TestCase):
         game_state.trains[5].make_public()
 
         player.dominoes.append(Domino(10, 10))  # can play on t0
-        player.dominoes.append(Domino(6, 4))    # can play on t4
+        player.dominoes.append(Domino(6, 4))  # can play on t4
         player.dominoes.append(Domino(0, 1))
-        player.dominoes.append(Domino(0, 12))   # can play on t2
+        player.dominoes.append(Domino(0, 12))  # can play on t2
         player.dominoes.append(Domino(11, 8))
         player.dominoes.append(Domino(11, 7))
-        player.dominoes.append(Domino(4, 3))    # can play on t4 and t5
-        player.dominoes.append(Domino(2, 12))   # can play on t2
+        player.dominoes.append(Domino(4, 3))  # can play on t4 and t5
+        player.dominoes.append(Domino(2, 12))  # can play on t2
 
         bgs = BotGameState(game_state, player)
         bot_trains = []
@@ -145,5 +145,20 @@ class BotGameStateTest(unittest.TestCase):
 
         self.assertEqual(game_state.played_count, bgs.played_count)
 
-
-
+    def test_graph(self):
+        game_state = GameState(5)
+        game_state.start_round(12)
+        player = game_state.players[0]
+        bgs = BotGameState(game_state, player)
+        print(*nodes(bgs.graph), sep='\n')
+        print(*edges(bgs.graph), sep='\n')
+        for start_domino in bgs.dominoes_for_number[12]:  # type: Domino
+            for end_domino in bgs.dominoes:  # type: Domino
+                for path in all_simple_paths(bgs.graph,
+                                             DominoEdge(start_domino, 12),
+                                             DominoEdge(end_domino, end_domino.left)):
+                    print(path)
+                for path in all_simple_paths(bgs.graph,
+                                             DominoEdge(start_domino, 12),
+                                             DominoEdge(end_domino, end_domino.right)):
+                    print(path)

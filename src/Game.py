@@ -52,7 +52,7 @@ class Game:
                 if not self.validate_move(move, player):
                     shuffle(valid_moves)
                     move = valid_moves.pop()
-                if move.domino.value.is_double:
+                if move.domino.is_double:
                     drew = False
                     played = False
                 else:
@@ -64,19 +64,19 @@ class Game:
         player.turn += 1
 
     def validate_move(self, move: BotMove, player: Player) -> bool:
-        return self.get_train_from_move(move).is_valid_play(move.domino.value, player)
+        return self.get_train_from_move(move).is_valid_play(move.domino, player)
 
     def get_train_from_move(self, move: BotMove) -> Train:
         return self.game_state.trains[move.train.identity.train_id]
 
     def do_move(self, player: Player, move: BotMove):
-        if player.dominoes.count(move.domino.value) == 0:
+        if player.dominoes.count(move.domino) == 0:
             raise RuntimeError("Cannot add Domino that player doesn't have!")
-        if self.game_state.played.count(move.domino.value)> 0:
+        if self.game_state.played.count(move.domino) > 0:
             raise RuntimeError("Cannot play a domino that has already been played!")
         train = self.get_train_from_move(move)
-        if train.add_domino(move.domino.value, player):
-            player.dominoes.remove(move.domino.value)
+        if train.add_domino(move.domino, player):
+            player.dominoes.remove(move.domino)
             return True
         return False
 

@@ -37,4 +37,15 @@ class DominoTest(unittest.TestCase):
         dd = Domino(6,6)
         self.assertEqual("[ 6 ]", dd.draw(d.right))
 
+    def test_matches(self):
+        d1 = Domino(2, 3)
+        d2 = Domino(5, 6)
+        d3 = Domino(3, 5)
+        self.assertFalse(d1.matches(d2))
+        self.assertFalse(d2.matches(d1))
+        self.assertTrue(d1.matches(d3))
+        self.assertTrue(d3.matches(d1))
+        self.assertTrue(d2.matches(d3))
+        self.assertTrue(d3.matches(d2))
+
 
