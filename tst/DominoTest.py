@@ -13,16 +13,24 @@ class DominoTest(unittest.TestCase):
     def test_equals(self):
         d1 = Domino(2, 3)
         d2 = Domino(2, 3)
-        d3 = Domino(5, 5)
+        d3 = Domino(3, 2)
+        d4 = Domino(5, 5)
+        d5 = Domino(5, 5)
         self.assertEqual(d1, d2)
-        self.assertNotEqual(d2, d3)
+        self.assertEqual(d1, d3)
+        self.assertNotEqual(d2, d4)
+        self.assertEqual(d4, d5)
 
     def test_hash(self):
         d1 = Domino(2, 3)
         d2 = Domino(2, 3)
-        d3 = Domino(5, 5)
+        d3 = Domino(3, 2)
+        d4 = Domino(5, 5)
+        d5 = Domino(5, 5)
         self.assertEqual(hash(d1), hash(d2))
-        self.assertNotEqual(hash(d2), hash(d3))
+        self.assertEqual(hash(d1), hash(d3))
+        self.assertNotEqual(hash(d2), hash(d4))
+        self.assertEqual(hash(d4), hash(d5))
 
     def test_other(self):
         d = Domino(2,3)

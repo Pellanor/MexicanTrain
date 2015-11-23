@@ -1,8 +1,7 @@
 import unittest
 
-from networkx import all_simple_paths, info, edges, nodes
-
-from src.Domino import Domino
+from networkx import all_simple_paths, info, edges, nodes, edge_dfs
+from src.Domino import Domino, make_domino_from_edge
 from src.GameState import GameState
 from src.Player import Player
 from src.Train import Train
@@ -147,18 +146,27 @@ class BotGameStateTest(unittest.TestCase):
 
     def test_graph(self):
         game_state = GameState(5)
-        game_state.start_round(12)
+        for train_id, player in enumerate(game_state.players):
+            game_state.trains.append(Train(train_id, 12, player))
+        game_state.trains.append(Train(len(game_state.trains), 5, None))
         player = game_state.players[0]
+        player.dominoes = [Domino(12, 3), Domino(3, 9), Domino(9, 7), Domino(7, 0), Domino(0, 10), Domino(10, 8),
+                           Domino(10, 10), Domino(10, 5), Domino(5, 3), Domino(5, 4), Domino(5, 6), Domino(6, 7)]
+
         bgs = BotGameState(game_state, player)
         print(*nodes(bgs.graph), sep='\n')
         print(*edges(bgs.graph), sep='\n')
-        for start_domino in bgs.dominoes_for_number[12]:  # type: Domino
-            for end_domino in bgs.dominoes:  # type: Domino
-                for path in all_simple_paths(bgs.graph,
-                                             DominoEdge(start_domino, 12),
-                                             DominoEdge(end_domino, end_domino.left)):
-                    print(path)
-                for path in all_simple_paths(bgs.graph,
-                                             DominoEdge(start_domino, 12),
-                                             DominoEdge(end_domino, end_domino.right)):
-                    print(path)
+
+        print('\n')
+
+        # for origin, paths in bgs.get_all_paths_from(bgs.get_playable_numbers()).items():
+        #     print("Origin: " + str(origin))
+        #     for path in paths:
+        #         print(path)
+        for path in bgs.get_longest_paths_from(bgs.get_playable_numbers()):
+            print(path)
+        print('\n')
+        for play in bgs.get_biggest_plays(bgs.get_playable_numbers()):
+            print("Play: ")
+            for path in play:
+                print(path)

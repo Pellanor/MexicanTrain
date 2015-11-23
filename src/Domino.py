@@ -16,7 +16,8 @@ class Domino(tuple):
         super().__init__()
 
     def __new__(cls, left: int, right: int):
-        return tuple.__new__(cls, (cls._MARKER, left, right))
+        # ensure that the left is always smaller, so that [2, 3] == [3, 2]
+        return tuple.__new__(cls, (cls._MARKER, min(left, right), max(left, right)))
 
     def __repr__(self):
         return self.draw(self.left)
@@ -46,3 +47,7 @@ class Domino(tuple):
             return self.left
         else:
             return None
+
+
+def make_domino_from_edge(edge):
+    return Domino(edge[0], edge[1])
