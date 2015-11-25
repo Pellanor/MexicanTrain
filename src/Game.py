@@ -10,11 +10,12 @@ class Game:
     def __init__(self, player_count):
         self.game_state = GameState(player_count)
 
-    def play(self):
+    def play(self, print = False):
         for cur_round in range(12, -1, -1):
             self.game_state.start_round(cur_round)
             self.play_round()
-            self.print_round(cur_round)
+            if print:
+                self.print_round(cur_round)
             self.game_state.clean_up_after_round()
 
     def play_round(self):
@@ -50,6 +51,7 @@ class Game:
             else:
                 move = player.bot.get_move(bot_game_state)
                 if not self.validate_move(move, player):
+                    player.bot.report_invalid_move(move)
                     shuffle(valid_moves)
                     move = valid_moves.pop()
                 if move.domino.is_double:
@@ -114,3 +116,6 @@ class Game:
         output += '\n'.join([str(train) for train in self.game_state.trains])
         output += '\n===========================================\n\n'
         print(output)
+
+    def get_stats(self):
+        return {player.identity.id: [player.victories, player.score] for player in self.game_state.players}

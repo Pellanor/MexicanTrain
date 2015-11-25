@@ -3,6 +3,7 @@ from random import shuffle
 from src.Domino import Domino
 from src.Player import Player
 from src.Train import Train
+from src.bots.BotFactory import get_long_bot, get_random_bot, get_fat_bot
 
 
 class GameState:
@@ -15,8 +16,12 @@ class GameState:
         self.round_over = False
         self.round_winner = None
         for i in range(player_count):
-            from src.bots.BotFactory import get_random_bot
-            self.players.append(Player(i, get_random_bot()))
+            if i == 0:
+                self.players.append(Player(i, get_fat_bot()))
+            elif i == 1:
+                self.players.append(Player(i, get_long_bot()))
+            else:
+                self.players.append(Player(i, get_random_bot()))
 
         self.current_player = None
 
@@ -45,6 +50,7 @@ class GameState:
 
         for train_id, player in enumerate(self.players):
             self.trains.append(Train(train_id, round_number, player))
+            player.bot.new_round(round_number)
         self.trains.append(Train(len(self.trains), round_number, None))
 
     def get_starting_player(self, starting_domino: Domino):

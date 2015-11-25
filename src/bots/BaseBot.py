@@ -1,15 +1,18 @@
 import abc
 
-from src.bots.state.BotGameState import BotGameState
+from src.bots.state.BotGameState import BotGameState, BotMove
 
 
 class BaseBot:
 
     def __init__(self):
+        self.invalid_moves = []
         self.turn = 0
+        self.round = 0
 
     def new_round(self, round_number: int):
         self.turn = 0
+        self.round = round_number
 
     # Called every round when the bot can take a turn
     # Return a BotGameState.BotMove which is the move the bot wishes to execute
@@ -23,5 +26,9 @@ class BaseBot:
         return
 
     # Called at the start of every turn for this bot
+    # The first turn is turn 0
     def start_turn(self, turn_number: int):
         self.turn = turn_number
+
+    def report_invalid_move(self, move: BotMove):
+        self.invalid_moves.append((self.round, self.turn, move))

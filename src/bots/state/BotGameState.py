@@ -1,8 +1,10 @@
+import itertools
+import operator
 from collections import namedtuple
 from copy import copy
+from functools import reduce
 
-import itertools
-from networkx import Graph, all_simple_paths, edge_dfs
+from networkx import Graph
 from networkx.algorithms.traversal.edgedfs import helper_funcs
 
 from src.Domino import Domino
@@ -14,22 +16,65 @@ BotMove = namedtuple('BotMove', ['domino', 'train'])
 DominoEdge = namedtuple('DominoEdge', ['domino', 'value'])
 
 
+class Path:
+    def __init__(self, edge_list):
+        self.edge_list = edge_list
+        self.edge_set = None
+        self.edge_tuple = None
+
+    def get_edge_set(self):
+        if self.edge_set is None:
+            self.edge_set = set([Path.key(edge) for edge in self.edge_list])
+        return self.edge_set
+
+    def get_edge_tuple(self):
+        if self.edge_tuple is None:
+            self.edge_tuple = tuple([Path.key(edge) for edge in self.edge_list])
+
+    @property
+    def size(self):
+        return len(self.edge_list)
+
+    @property
+    def start(self):
+        if self.size > 0:
+            return self.edge_list[0][0]
+        return None
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.get_edge_tuple() == other.get_edge_tuple()
+
+    def __hash__(self):
+        return hash(self.get_edge_tuple())
+
+    def __str__(self):
+        return str(self.edge_list)
+
+    # From NetworkX edgedfs.py
+    @staticmethod
+    def key(edge):
+        new_edge = (frozenset(edge[:2]),) + edge[2:]
+        return new_edge
+
+
 class BotGameState:
     def __init__(self, game: GameState, player: Player):
         self.all_trains = []
         self.playable_trains = []
         self.other_trains = []
+        self.trains_for_number = {i: [] for i in range(13)}
+        self.dominoes_for_number = {i: [] for i in range(13)}
+        self.dominoes = []
         for train_id, train in enumerate(game.trains):
             bot_train = BotTrain(train, player)
             if bot_train.am_owner:
                 self.my_train = bot_train
             if bot_train.can_add:
                 self.playable_trains.append(bot_train)
+                self.trains_for_number[bot_train.requires].append(bot_train)
             else:
                 self.other_trains.append(bot_train)
             self.all_trains.append(bot_train)
-        self.dominoes_for_number = {i: [] for i in range(13)}
-        self.dominoes = []
         self.graph = Graph()
         for domino in player.dominoes:
             self.draw_domino(domino)
@@ -80,12 +125,13 @@ class BotGameState:
             edge_key = key(edge)
             if edge_key not in visited_edges:
                 paths.extend(self._get_more_edges(edges, edge, visited_edges, edge_key, kwds, out_edges, key))
-        paths.append(edges)
+        paths.append(Path(edges))
         return paths
 
     #  Finds all paths through the dominoes graph starting at the specified origin number.
     #  The returned paths will visit each edge no more than once.
     #  Accepts either a single origin number, or a list of origin points.
+    #  A list of type Path is returned
     def get_all_paths_from(self, origin):
         nodes = list(self.graph.nbunch_iter(origin))
         if not nodes:
@@ -106,12 +152,12 @@ class BotGameState:
         return paths
 
     def get_longest_paths_from(self, origin):
-        long_paths = [[]]
+        long_paths = [Path([])]
         for paths in self.get_all_paths_from(origin).values():
-            for path in paths:
-                if len(path) == len(long_paths[0]):
+            for path in paths:  # type: Path
+                if path.size == long_paths[0].size:
                     long_paths.append(path)
-                elif len(path) > len(long_paths[0]):
+                elif path.size > long_paths[0].size:
                     long_paths = [path]
         return long_paths
 
@@ -121,45 +167,43 @@ class BotGameState:
             numbs.add(train.requires)
         return numbs
 
+    # Returns a set of Plays. A Play being a set of paths with no duplicate edges.
+    # This is NP hard, so may raise an AttributeError if the problem space is too big.
     def get_biggest_plays(self, origin):
         paths_dict = self.get_all_paths_from(origin)
-        out_edges, key, tailhead = helper_funcs(self.graph, 'original')
 
-        path_sets_dict = {}
-        path_map = dict()
-        plays = set()
-        for head, paths in paths_dict.items():
-            #  Start with an empty set so we're not forced to use bot origins
-            path_sets_dict[head] = [frozenset()]
-            for path in paths:
-                path_set = frozenset([key(edge) for edge in path])
-                path_sets_dict[head].append(path_set)
-                path_map[path_set] = path
+        for start in paths_dict.keys():
+            paths_dict[start].append(Path([]))
 
-        for path_sets in itertools.product(*path_sets_dict.values()):
+        plays = []
+
+        # O(n^len(origin)) aka potentially really really slow, return False if it's too big
+        prod = reduce(operator.mul, [len(paths) for paths in paths_dict.values()], 1)
+        if prod > 1000000:
+            err_str = "Too many possible plays! {:.2e} - ".format(prod)
+            for start_num, size in paths_dict.items():
+                err_str += " {}({:n})".format(str(start_num), len(size))
+            raise AttributeError(err_str)
+
+        for path_sets in itertools.product(*paths_dict.values()):
             unique = True
             for combination in itertools.combinations(path_sets, 2):
-                if not combination[0].isdisjoint(combination[1]):
+                if not combination[0].get_edge_set().isdisjoint(combination[1].get_edge_set()):
                     unique = False
                     break
             if unique:
-                plays.add(path_sets)
+                plays.append(path_sets)
 
         biggest_plays = set(set(set()))
         biggest_size = 0
         for play in plays:
             size = 0
-            for path_set in play:
-                size += len(path_set)
+            for path in play:
+                size += path.size
             if size == biggest_size:
                 biggest_plays.add(play)
             if size > biggest_size:
                 biggest_plays = {play}
                 biggest_size = size
 
-        val = []
-        for play in biggest_plays:
-            val.append([])
-            for path_set in play:
-                val[-1].append(path_map[path_set])
-        return val
+        return biggest_plays
