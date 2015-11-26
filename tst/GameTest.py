@@ -30,7 +30,7 @@ class GameTest(unittest.TestCase):
 
     def test_game_lots(self):
         players = 5
-        games = 1000
+        games = 10
 
         stats = {i: [0, 0] for i in range(players)}
         for count in range(games):

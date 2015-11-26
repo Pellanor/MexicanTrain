@@ -17,7 +17,7 @@ class GameState:
         self.round_winner = None
         for i in range(player_count):
             if i == 0:
-                self.players.append(Player(i, get_fat_bot()))
+                self.players.append(Player(i, get_long_bot()))
             elif i == 1:
                 self.players.append(Player(i, get_long_bot()))
             else:

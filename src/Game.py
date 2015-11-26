@@ -1,5 +1,4 @@
 from random import shuffle
-
 from src.GameState import GameState, draw_domino
 from src.Player import Player
 from src.Train import Train
@@ -10,7 +9,7 @@ class Game:
     def __init__(self, player_count):
         self.game_state = GameState(player_count)
 
-    def play(self, print = False):
+    def play(self, print=False):
         for cur_round in range(12, -1, -1):
             self.game_state.start_round(cur_round)
             self.play_round()
@@ -73,12 +72,17 @@ class Game:
 
     def do_move(self, player: Player, move: BotMove):
         if player.dominoes.count(move.domino) == 0:
-            raise RuntimeError("Cannot add Domino that player doesn't have!")
+            raise RuntimeError(
+                "Cannot add Domino that player doesn't have! \n Move: {} \n Dominoes {} \n {} \n Played {}".
+                format(move, player.dominoes, self.get_train_from_move(move), self.game_state.played))
         if self.game_state.played.count(move.domino) > 0:
-            raise RuntimeError("Cannot play a domino that has already been played!")
+            raise RuntimeError(
+                "Cannot play a domino that has already been played! \n Move: {} \n Dominoes {} \n {} \n Played {}".
+                format(move, player.dominoes, self.get_train_from_move(move), self.game_state.played))
         train = self.get_train_from_move(move)
         if train.add_domino(move.domino, player):
             player.dominoes.remove(move.domino)
+            self.game_state.played.append(move.domino)
             return True
         return False
 

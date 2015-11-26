@@ -1,172 +1,190 @@
 import unittest
-
+import collections
 from networkx import all_simple_paths, info, edges, nodes, edge_dfs
 from src.Domino import Domino, make_domino_from_edge
 from src.GameState import GameState
 from src.Player import Player
 from src.Train import Train
-from src.bots.state.BotGameState import BotGameState, BotMove, DominoEdge
+from src.bots.state.BotGameState import BotGameState, BotMove, DominoEdge, Path, Play
 from src.bots.state.BotTrain import BotTrain
 from src.bots.state.BotPlayer import BotPlayer
 from tst.bots.TestBot import TestBot
 
 
 class BotGameStateTest(unittest.TestCase):
-    def test_bot_train(self):
-        player_id = 42
-        train_id = 9001
-        required = 6
-        p = Player(player_id, TestBot())
-        t = Train(train_id, required, p)
-        bt = BotTrain(t, p)
-        self.assertTrue(bt.can_add)
-        self.assertTrue(bt.am_owner)
-        self.assertFalse(bt.identity.mexican)
-        self.assertEqual(p, bt.identity.owner)
-        self.assertEqual(required, bt.requires)
-        bt.cars.append(Domino(2, 3))
-        self.assertEqual(0, len(t.cars))
-
-        d1 = Domino(6, 6)
-        t.add_domino(d1, p)
-        bt = BotTrain(t, p)
-        self.assertTrue(bt.demands_satisfaction)
-        self.assertEqual(6, bt.requires)
-        self.assertEqual(d1, bt.cars.pop())
-
-        d2 = Domino(12, 6)
-        t.add_domino(d2, p)
-        bt = BotTrain(t, p)
-        self.assertFalse(bt.demands_satisfaction)
-        self.assertEqual(12, bt.requires)
-        self.assertEqual(d2, bt.cars.pop())
-
-    def test_bot_train_cannot_play(self):
-        player_id = 42
-        owner_id = 24
-        train_id = 9001
-        required = 6
-        p = Player(player_id, TestBot())
-        o = Player(owner_id, TestBot())
-        t = Train(train_id, required, o)
-        bt = BotTrain(t, p)
-        self.assertFalse(bt.can_add)
-        self.assertFalse(bt.am_owner)
-        self.assertFalse(bt.identity.mexican)
-        self.assertEqual(o, bt.identity.owner)
-
-    def test_bot_train_public(self):
-        player_id = 42
-        owner_id = 24
-        train_id = 9001
-        required = 6
-        p = Player(player_id, TestBot())
-        o = Player(owner_id, TestBot())
-        t = Train(train_id, required, o)
-        t.make_public()
-        bt = BotTrain(t, p)
-        self.assertTrue(bt.can_add)
-        self.assertFalse(bt.am_owner)
-        self.assertFalse(bt.identity.mexican)
-        self.assertEqual(o, bt.identity.owner)
-
-    def test_bot_train_mexican(self):
-        player_id = 42
-        train_id = 9001
-        required = 6
-        p = Player(player_id, TestBot())
-        t = Train(train_id, required, None)
-        bt = BotTrain(t, p)
-        self.assertTrue(bt.can_add)
-        self.assertFalse(bt.am_owner)
-        self.assertTrue(bt.identity.mexican)
-        self.assertEqual(None, bt.identity.owner)
-
-    def test_bot_player(self):
-        player_id = 42
-        p = Player(player_id, TestBot())
-        p.dominoes.append(Domino(2, 3))
-        train_id = 9001
-        required = 6
-        t = Train(train_id, required, p)
-        bt = BotTrain(t, p)
-        bp = BotPlayer(p, bt)
-        self.assertEqual(player_id, bp.player_id)
-        self.assertEqual(len(p.dominoes), bp.tile_count)
-        self.assertEqual(bt, bp.train)
-
-    def test_bot_game_state(self):
+    def get_test_game_state(self):
         game_state = GameState(5)
         player = game_state.players[0]
 
-        game_state.trains.append(Train(0, 10, game_state.players[0]))
-        game_state.trains.append(Train(1, 11, game_state.players[1]))
-        game_state.trains.append(Train(2, 12, game_state.players[2]))
-        game_state.trains.append(Train(3, 5, game_state.players[3]))
-        game_state.trains.append(Train(4, 4, game_state.players[4]))
-        game_state.trains.append(Train(5, 3, None))
+        game_state.trains.append(Train(0, 10, game_state.players[0]))  # mine
+        game_state.trains.append(Train(1, 11, game_state.players[1]))  # private
+        game_state.trains.append(Train(2, 12, game_state.players[2]))  # same start as 3
+        game_state.trains.append(Train(3, 12, game_state.players[3]))  # same start as 2
+        game_state.trains.append(Train(5, 3, None))  # mexican
 
         game_state.trains[2].make_public()
         game_state.trains[3].make_public()
         game_state.trains[4].make_public()
-        game_state.trains[5].make_public()
 
         player.dominoes.append(Domino(10, 10))  # can play on t0
-        player.dominoes.append(Domino(6, 4))  # can play on t4
-        player.dominoes.append(Domino(0, 1))
-        player.dominoes.append(Domino(0, 12))  # can play on t2
-        player.dominoes.append(Domino(11, 8))
-        player.dominoes.append(Domino(11, 7))
-        player.dominoes.append(Domino(4, 3))  # can play on t4 and t5
-        player.dominoes.append(Domino(2, 12))  # can play on t2
+        player.dominoes.append(Domino(6, 3))  # can play on t4
+        player.dominoes.append(Domino(0, 12))  # can play on t2 and t3
+        player.dominoes.append(Domino(11, 8))  # cannot play, private
+        player.dominoes.append(Domino(4, 3))  # can play on t4
+        player.dominoes.append(Domino(2, 12))  # can play on t2 and t3
+        player.dominoes.append(Domino(0, 1))  # can play on d2
+        player.dominoes.append(Domino(1, 3))  # can play on d4 and d6 and t4
+        player.dominoes.append(Domino(3, 0))  # loop between d7 and d8, can also play on d4 and t4
 
-        bgs = BotGameState(game_state, player)
+        return game_state, BotGameState(game_state, player)
+
+    def test_bot_game_state(self):
+        game_state, bot_game_state = self.get_test_game_state()
         bot_trains = []
         for train in game_state.trains:
             bot_trains.append(BotTrain(train, train.identity.owner))
 
-        self.assertEqual(bot_trains[0], bgs.my_train)
-        self.assertIn(bot_trains[1], bgs.other_trains)
-        self.assertIn(bot_trains[0], bgs.playable_trains)
-        self.assertIn(bot_trains[2], bgs.playable_trains)
-        self.assertIn(bot_trains[3], bgs.playable_trains)
-        self.assertIn(bot_trains[4], bgs.playable_trains)
-        self.assertIn(bot_trains[5], bgs.playable_trains)
+        self.assertEqual(bot_trains[0], bot_game_state.my_train)
+        self.assertIn(bot_trains[1], bot_game_state.other_trains)
+        self.assertIn(bot_trains[0], bot_game_state.playable_trains)
+        self.assertIn(bot_trains[2], bot_game_state.playable_trains)
+        self.assertIn(bot_trains[3], bot_game_state.playable_trains)
+        self.assertIn(bot_trains[4], bot_game_state.playable_trains)
 
-        moves = bgs.get_all_valid_moves()
-        self.assertEqual(6, len(moves))
-        self.assertIn(BotMove(bgs.dominoes[0], bot_trains[0]), moves)
-        self.assertIn(BotMove(bgs.dominoes[1], bot_trains[4]), moves)
-        self.assertIn(BotMove(bgs.dominoes[3], bot_trains[2]), moves)
-        self.assertIn(BotMove(bgs.dominoes[6], bot_trains[4]), moves)
-        self.assertIn(BotMove(bgs.dominoes[6], bot_trains[4]), moves)
-        self.assertIn(BotMove(bgs.dominoes[7], bot_trains[2]), moves)
+        self.assertEqual(game_state.played_count, bot_game_state.played_count)
 
-        self.assertEqual(game_state.played_count, bgs.played_count)
+        for domino in bot_game_state.dominoes:
+            self.assertIn(domino, bot_game_state.dominoes_for_number[domino.left])
+            self.assertIn(domino, bot_game_state.dominoes_for_number[domino.right])
 
-    def test_graph(self):
-        game_state = GameState(5)
-        for train_id, player in enumerate(game_state.players):
-            game_state.trains.append(Train(train_id, 12, player))
-        game_state.trains.append(Train(len(game_state.trains), 5, None))
-        player = game_state.players[0]
-        player.dominoes = [Domino(12, 3), Domino(3, 9), Domino(9, 7), Domino(7, 0), Domino(0, 10), Domino(10, 8),
-                           Domino(10, 10), Domino(10, 5), Domino(5, 3), Domino(5, 4), Domino(5, 6), Domino(6, 7)]
+    def test_draw_domino(self):
+        game_state, bot_game_state = self.get_test_game_state()
+        d = Domino(3, 3)
+        bot_game_state.draw_domino(d)
+        self.assertIn(d, bot_game_state.dominoes)
+        self.assertIn(BotMove(d, bot_game_state.all_trains[4]), bot_game_state.get_all_valid_moves())
+        self.assertIn(d, bot_game_state.dominoes_for_number[3])
+        self.assertIn((3, 3), edges(bot_game_state.graph))
 
-        bgs = BotGameState(game_state, player)
-        print(*nodes(bgs.graph), sep='\n')
-        print(*edges(bgs.graph), sep='\n')
+    def test_get_unplayed_count(self):
+        game_state, bot_game_state = self.get_test_game_state()
+        for i in range(0, 13):
+            self.assertEqual(13 - game_state.played_count[i], bot_game_state.get_unplayed_count(i))
 
-        print('\n')
+    def test_do_move(self):
+        game_state, bot_game_state = self.get_test_game_state()
+        domino = bot_game_state.dominoes[0]
+        train = bot_game_state.all_trains[0]
+        bot_game_state.do_move(BotMove(domino, train))
+        self.assertNotIn(domino, bot_game_state.dominoes)
+        self.assertNotIn(domino, bot_game_state.dominoes_for_number[10])
+        self.assertEqual(1, bot_game_state.played_count[10])
+        self.assertEqual(12, bot_game_state.get_unplayed_count(10))
+        self.assertEqual(domino, train.cars[-1])
+        self.assertIn(train, bot_game_state.trains_for_number[10])
 
-        # for origin, paths in bgs.get_all_paths_from(bgs.get_playable_numbers()).items():
-        #     print("Origin: " + str(origin))
-        #     for path in paths:
-        #         print(path)
-        for path in bgs.get_longest_paths_from(bgs.get_playable_numbers()):
-            print(path)
-        print('\n')
-        for play in bgs.get_biggest_plays(bgs.get_playable_numbers()):
-            print("Play: ")
-            for path in play:
-                print(path)
+        domino = bot_game_state.dominoes[0]  # Domino(6, 3) was previously [1], but is now []0 since we popped [0]
+        train = bot_game_state.all_trains[4]
+        bot_game_state.do_move(BotMove(domino, train))
+        self.assertNotIn(domino, bot_game_state.dominoes)
+        self.assertNotIn(domino, bot_game_state.dominoes_for_number[6])
+        self.assertNotIn(domino, bot_game_state.dominoes_for_number[3])
+        self.assertEqual(1, bot_game_state.played_count[6])
+        self.assertEqual(1, bot_game_state.played_count[3])
+        self.assertEqual(12, bot_game_state.get_unplayed_count(6))
+        self.assertEqual(12, bot_game_state.get_unplayed_count(3))
+        self.assertEqual(domino, train.cars[-1])
+        self.assertIn(train, bot_game_state.trains_for_number[6])
+        self.assertNotIn(train, bot_game_state.trains_for_number[3])
+
+
+    def test_get_all_valid_moves(self):
+        game_state, bot_game_state = self.get_test_game_state()
+
+        moves = bot_game_state.get_all_valid_moves()
+
+        expected_moves = [BotMove(bot_game_state.dominoes[0], bot_game_state.all_trains[0]),
+                          BotMove(bot_game_state.dominoes[1], bot_game_state.all_trains[4]),
+                          BotMove(bot_game_state.dominoes[2], bot_game_state.all_trains[2]),
+                          BotMove(bot_game_state.dominoes[2], bot_game_state.all_trains[3]),
+                          BotMove(bot_game_state.dominoes[4], bot_game_state.all_trains[4]),
+                          BotMove(bot_game_state.dominoes[5], bot_game_state.all_trains[3]),
+                          BotMove(bot_game_state.dominoes[5], bot_game_state.all_trains[2]),
+                          BotMove(bot_game_state.dominoes[7], bot_game_state.all_trains[4]),
+                          BotMove(bot_game_state.dominoes[8], bot_game_state.all_trains[4])]
+        self.assertEqual(collections.Counter(expected_moves), collections.Counter(moves))
+
+    def test_get_all_paths_from(self):
+        game_state, bot_game_state = self.get_test_game_state()
+
+        path_dict = bot_game_state.get_all_paths_from(12)
+        self.assertEqual(1, len(path_dict))
+        paths = path_dict[12]
+
+        expected_paths = [Path([(12, 2)]),
+                          Path([(12, 0)]),
+                          Path([(12, 0), (0, 1)]),
+                          Path([(12, 0), (0, 1), (1, 3)]),
+                          Path([(12, 0), (0, 1), (1, 3), (3, 4)]),
+                          Path([(12, 0), (0, 1), (1, 3), (3, 6)]),
+                          Path([(12, 0), (0, 1), (1, 3), (3, 0)]),
+                          Path([(12, 0), (0, 3)]),
+                          Path([(12, 0), (0, 3), (3, 4)]),
+                          Path([(12, 0), (0, 3), (3, 6)]),
+                          Path([(12, 0), (0, 3), (3, 1)]),
+                          Path([(12, 0), (0, 3), (3, 1), (1, 0)])]
+        self.assertEqual(collections.Counter(expected_paths), collections.Counter(paths))
+
+        path_dict = bot_game_state.get_all_paths_from(3)
+        self.assertEqual(1, len(path_dict))
+        paths = path_dict[3]
+
+        expected_paths = [Path([(3, 4)]),
+                          Path([(3, 6)]),
+                          Path([(3, 0)]),
+                          Path([(3, 1)]),
+                          Path([(3, 1), (1, 0)]),
+                          Path([(3, 1), (1, 0), (0, 12)]),
+                          Path([(3, 1), (1, 0), (0, 12), (12, 2)]),
+                          Path([(3, 1), (1, 0), (0, 3)]),
+                          Path([(3, 1), (1, 0), (0, 3), (3, 4)]),
+                          Path([(3, 1), (1, 0), (0, 3), (3, 6)]),
+                          Path([(3, 0), (0, 12)]),
+                          Path([(3, 0), (0, 12), (12, 2)]),
+                          Path([(3, 0), (0, 1)]),
+                          Path([(3, 0), (0, 1), (1, 3)]),
+                          Path([(3, 0), (0, 1), (1, 3), (3, 4)]),
+                          Path([(3, 0), (0, 1), (1, 3), (3, 6)])]
+        self.assertEqual(collections.Counter(expected_paths), collections.Counter(paths))
+
+    def test_get_longest_paths_from(self):
+        game_state, bot_game_state = self.get_test_game_state()
+
+        paths = bot_game_state.get_longest_paths_from(bot_game_state.get_playable_numbers())
+        expected_paths = [Path([(12, 0), (0, 1), (1, 3), (3, 4)]),
+                          Path([(12, 0), (0, 1), (1, 3), (3, 6)]),
+                          Path([(12, 0), (0, 1), (1, 3), (3, 0)]),
+                          Path([(12, 0), (0, 3), (3, 1), (1, 0)]),
+                          Path([(3, 1), (1, 0), (0, 12), (12, 2)]),
+                          Path([(3, 1), (1, 0), (0, 3), (3, 4)]),
+                          Path([(3, 1), (1, 0), (0, 3), (3, 6)]),
+                          Path([(3, 0), (0, 1), (1, 3), (3, 4)]),
+                          Path([(3, 0), (0, 1), (1, 3), (3, 6)])]
+        self.assertEqual(collections.Counter(expected_paths), collections.Counter(paths))
+
+    def test_get_playable_numbers(self):
+        game_state, bot_game_state = self.get_test_game_state()
+        playable_numbers = bot_game_state.get_playable_numbers()
+        self.assertEqual(collections.Counter(playable_numbers), collections.Counter([3, 10, 12, 12]))
+
+    def test_get_biggest_plays_from(self):
+        game_state, bot_game_state = self.get_test_game_state()
+
+        plays = bot_game_state.get_biggest_plays_from(bot_game_state.get_playable_numbers())
+        expected_play = Play([Path([(10, 10)]),
+                              Path([(12, 2)]),
+                              Path([(3, 4)]),
+                              Path([(12, 0), (0, 1), (1, 3), (3, 0)])])
+
+        self.assertEqual(28, len(plays))
+        self.assertIn(expected_play, plays)
