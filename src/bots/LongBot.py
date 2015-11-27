@@ -1,5 +1,5 @@
 from src.bots.BaseBot import BaseBot
-from src.bots.state.BotGameState import BotGameState
+from src.bots.state.BotGameState import BotGameState, BotMove
 from src.bots.strategy.Random import Random
 
 
@@ -10,7 +10,7 @@ class LongBot(BaseBot):
         super().__init__()
         self.strategy = strategy
 
-    # TODO: SOmehow it's playing the same move twice in a row. No idea what's causing it :'(
+    # TODO: Somehow it's playing the same move twice in a row. No idea what's causing it :'(
     def get_move(self, game_state: BotGameState):
         if self.turn == 0:
             if len(self.first_turn_moves) == 0:
@@ -21,6 +21,10 @@ class LongBot(BaseBot):
                 return move
 
         return self.get_valid_move(game_state, self.strategy)
+
+    def report_invalid_move(self, move: BotMove):
+        super(LongBot, self).report_invalid_move(move)
+        self.first_turn_moves = []
 
     def new_round(self, round_number: int):
         super(LongBot, self).new_round(round_number)

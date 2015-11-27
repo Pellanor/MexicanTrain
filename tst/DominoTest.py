@@ -33,7 +33,7 @@ class DominoTest(unittest.TestCase):
         self.assertEqual(hash(d4), hash(d5))
 
     def test_other(self):
-        d = Domino(2,3)
+        d = Domino(2, 3)
         self.assertEqual(3, d.get_other_number(2))
         self.assertEqual(2, d.get_other_number(3))
         self.assertIsNone(d.get_other_number(42))
@@ -42,7 +42,7 @@ class DominoTest(unittest.TestCase):
         d = Domino(2, 3)
         self.assertEqual("[2|3]", d.draw(d.left))
         self.assertEqual("[3|2]", d.draw(d.right))
-        dd = Domino(6,6)
+        dd = Domino(6, 6)
         self.assertEqual("[ 6 ]", dd.draw(d.right))
 
     def test_matches(self):

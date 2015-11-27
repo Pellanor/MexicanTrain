@@ -1,4 +1,5 @@
 import abc
+from operator import attrgetter
 
 from src.Domino import make_domino_from_edge
 from src.bots.state.BotGameState import BotGameState, BotMove
@@ -40,18 +41,18 @@ class BaseBot:
 
     @staticmethod
     def get_move_list_for_longest_paths_from(origin: int, game_state: BotGameState, strategy: Strategy):
-        path = strategy.choose_path(game_state.get_longest_paths_from(origin), game_state)
-        train = strategy.choose_train_for_path(game_state, path)
+        path, train = strategy.choose_path_and_train(game_state, game_state.get_longest_paths_from(origin),
+                                                     game_state.playable_trains)
         return [BotMove(make_domino_from_edge(edge), train) for edge in path.edge_list]
 
-    #  TODO: Make sure it orders the returned playes to avoid getting stuck demanding satisfaction!
     @staticmethod
     def get_move_list_for_biggest_play_from(origin: int, game_state: BotGameState, strategy: Strategy):
         try:
             play = strategy.choose_play(game_state.get_biggest_plays_from(origin), game_state)
             moves = []
             used_trains = []
-            for path in play.paths:
+            # Loop through the sorted paths, so that any path which demands satisfaction is last
+            for path in sorted(play.paths, key=attrgetter('demands_satisfaction')):
                 if path.size > 0:
                     train = strategy.choose_train_for_path(game_state, path, used_trains)
                     used_trains.append(train)

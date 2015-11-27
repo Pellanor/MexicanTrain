@@ -8,78 +8,12 @@ from networkx.algorithms.traversal.edgedfs import helper_funcs
 from src.Domino import Domino
 from src.GameState import GameState
 from src.Player import Player
+from src.bots.state.BotPlayer import BotPlayer
 from src.bots.state.BotTrain import BotTrain
+from src.bots.state.Path import Path
+from src.bots.state.Play import Play
 
 BotMove = namedtuple('BotMove', ['domino', 'train'])
-DominoEdge = namedtuple('DominoEdge', ['domino', 'value'])
-
-
-class Path:
-    def __init__(self, edge_list):
-        self.edge_list = edge_list
-        self.edge_set = None
-        self.edge_tuple = None
-
-    def get_edge_set(self):
-        if self.edge_set is None:
-            self.edge_set = set([Path.key(edge) for edge in self.edge_list])
-        return self.edge_set
-
-    def get_edge_tuple(self):
-        if self.edge_tuple is None:
-            self.edge_tuple = tuple([Path.key(edge) for edge in self.edge_list])
-
-    @property
-    def size(self):
-        return len(self.edge_list)
-
-    @property
-    def start(self):
-        if self.size > 0:
-            return self.edge_list[0][0]
-        return None
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.get_edge_tuple() == other.get_edge_tuple()
-
-    def __hash__(self):
-        return hash(self.get_edge_tuple())
-
-    def __str__(self):
-        return str(self.edge_list)
-
-    # From NetworkX edgedfs.py
-    @staticmethod
-    def key(edge):
-        new_edge = (frozenset(edge[:2]),) + edge[2:]
-        return new_edge
-
-
-class Play:
-    def __init__(self, paths):
-        self.paths = tuple(paths)
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.paths == other.paths
-
-    def __hash__(self):
-        return hash(self.paths)
-
-    def __str__(self):
-        return str(self.paths)
-
-    @property
-    def size(self):
-        return sum([path.size for path in self.paths])
-
-    def add_path(self, path: Path):
-        self.paths.append(path)
-
-    def add_all(self, paths):
-        self.paths.extend(paths)
-
-    def get_paths_from(self, origin: int):
-        return [path for path in self.paths if path.start == origin]
 
 
 class BotGameState:
@@ -104,6 +38,12 @@ class BotGameState:
         for domino in player.dominoes:
             self.draw_domino(domino)
         self.played_count = game.played_count
+        self.players = [BotPlayer(train.identity.owner, train, train.identity.owner == player) for train in game.trains
+                        if not train.identity.mexican]
+
+    @property
+    def mexican_train(self) -> BotTrain:
+        return self.all_trains[-1]
 
     def draw_domino(self, domino: Domino):
         self.graph.add_edge(domino.left, domino.right)
@@ -229,7 +169,11 @@ class BotGameState:
                     unique = False
                     break
             if unique:
-                plays.append(Play(paths))
+                play = Play(paths)
+                # It's not a valid play if we have multiple unsatisfied doubles.
+                # There will be other plays that drop those.
+                if not play.satisfaction_count > 1:
+                    plays.append(Play(paths))
 
         biggest_plays = []
         biggest_size = 0

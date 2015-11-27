@@ -1,11 +1,9 @@
 from src.bots.BaseBot import BaseBot
+from src.bots.state.BotGameState import BotGameState
 
 
 class TestBot(BaseBot):
     moves = []
 
-    def draw_tile(self, game_state):
-        return self.moves
-
-    def take_turn(self, game_state):
-        return self.moves
+    def get_move(self, game_state: BotGameState):
+        return self.moves.pop(0)

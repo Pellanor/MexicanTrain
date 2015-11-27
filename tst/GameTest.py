@@ -1,6 +1,5 @@
 import unittest
 
-from src.Domino import Domino
 from src.Game import Game
 
 
@@ -30,7 +29,7 @@ class GameTest(unittest.TestCase):
 
     def test_game_lots(self):
         players = 5
-        games = 10
+        games = 100
 
         stats = {i: [0, 0] for i in range(players)}
         for count in range(games):

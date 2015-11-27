@@ -1,6 +1,6 @@
 from random import shuffle
 from src.bots.state import BotGameState
-from src.bots.state.BotGameState import Path
+from src.bots.state.Path import Path
 from src.bots.strategy.Strategy import Strategy
 
 
@@ -19,10 +19,12 @@ class Random(Strategy):
             return moves.pop()
         return None
 
-    def choose_path(self, paths, game_state: BotGameState) -> Path:
+    def choose_path_and_train(self, game_state: BotGameState, paths, trains) -> Path:
         if len(paths) > 0:
             shuffle(paths)
-            return paths.pop()
+            path = paths.pop()
+            train = self.choose_train_for_path(game_state, path)
+            return path, train
         return None
 
     def choose_play(self, plays, game_state: BotGameState):

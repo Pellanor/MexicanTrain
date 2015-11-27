@@ -9,11 +9,11 @@ class Game:
     def __init__(self, player_count):
         self.game_state = GameState(player_count)
 
-    def play(self, print=False):
+    def play(self, print_each_round=False):
         for cur_round in range(12, -1, -1):
             self.game_state.start_round(cur_round)
             self.play_round()
-            if print:
+            if print_each_round:
                 self.print_round(cur_round)
             self.game_state.clean_up_after_round()
 
@@ -65,7 +65,9 @@ class Game:
         player.turn += 1
 
     def validate_move(self, move: BotMove, player: Player) -> bool:
-        return self.get_train_from_move(move).is_valid_play(move.domino, player)
+        return self.get_train_from_move(move).is_valid_play(move.domino, player) and \
+               player.dominoes.count(move.domino) > 0 and \
+               self.game_state.played.count(move.domino) == 0
 
     def get_train_from_move(self, move: BotMove) -> Train:
         return self.game_state.trains[move.train.identity.train_id]

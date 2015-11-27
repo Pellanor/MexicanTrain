@@ -9,11 +9,13 @@ class BotTrain:
 
     def __init__(self, train: Train, player: Player):
         self.identity = train.identity
+        self.is_public = not train.private
         self.am_owner = player == self.identity.owner
         self.can_add = train.can_player_add(player)
         self.cars = copy(train.cars)
         self.requires = train.requires
         self.demands_satisfaction = train.demands_satisfaction
+        self.owner_tile_count = len(player.dominoes)
 
     def play(self, domino: Domino):
         if not domino.contains(self.requires):

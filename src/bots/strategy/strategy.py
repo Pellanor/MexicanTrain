@@ -1,6 +1,8 @@
 import abc
+
 from src.bots.state import BotGameState
-from src.bots.state.BotGameState import Play, Path, BotMove
+from src.bots.state.BotGameState import BotMove
+from src.bots.state.Play import Play
 
 
 class Strategy:
@@ -9,7 +11,7 @@ class Strategy:
         return
 
     @abc.abstractmethod
-    def choose_path(self, paths, game_state: BotGameState) -> Path:
+    def choose_path_and_train(self, game_state: BotGameState, paths, trains):
         return
 
     @abc.abstractmethod

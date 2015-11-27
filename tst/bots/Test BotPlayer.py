@@ -18,7 +18,8 @@ class TestBotPlayer(unittest.TestCase):
         required = 6
         t = Train(train_id, required, p)
         bt = BotTrain(t, p)
-        bp = BotPlayer(p, bt)
+        bp = BotPlayer(p, bt, False)
         self.assertEqual(player_id, bp.player_id)
         self.assertEqual(len(p.dominoes), bp.tile_count)
         self.assertEqual(bt, bp.train)
+        self.assertFalse(bp.is_me)

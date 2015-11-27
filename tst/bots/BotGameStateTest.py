@@ -1,14 +1,15 @@
-import unittest
 import collections
-from networkx import all_simple_paths, info, edges, nodes, edge_dfs
-from src.Domino import Domino, make_domino_from_edge
+import unittest
+
+from networkx import edges
+
+from src.Domino import Domino
 from src.GameState import GameState
-from src.Player import Player
 from src.Train import Train
-from src.bots.state.BotGameState import BotGameState, BotMove, DominoEdge, Path, Play
+from src.bots.state.BotGameState import BotGameState, BotMove
 from src.bots.state.BotTrain import BotTrain
-from src.bots.state.BotPlayer import BotPlayer
-from tst.bots.TestBot import TestBot
+from src.bots.state.Path import Path
+from src.bots.state.Play import Play
 
 
 class BotGameStateTest(unittest.TestCase):
@@ -50,6 +51,8 @@ class BotGameStateTest(unittest.TestCase):
         self.assertIn(bot_trains[2], bot_game_state.playable_trains)
         self.assertIn(bot_trains[3], bot_game_state.playable_trains)
         self.assertIn(bot_trains[4], bot_game_state.playable_trains)
+
+        self.assertTrue(bot_game_state.mexican_train.identity.mexican)
 
         self.assertEqual(game_state.played_count, bot_game_state.played_count)
 
@@ -96,7 +99,6 @@ class BotGameStateTest(unittest.TestCase):
         self.assertEqual(domino, train.cars[-1])
         self.assertIn(train, bot_game_state.trains_for_number[6])
         self.assertNotIn(train, bot_game_state.trains_for_number[3])
-
 
     def test_get_all_valid_moves(self):
         game_state, bot_game_state = self.get_test_game_state()
