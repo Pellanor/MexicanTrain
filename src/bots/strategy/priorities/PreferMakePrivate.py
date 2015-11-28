@@ -6,6 +6,11 @@ from src.bots.strategy.TrainChooser import TrainChooser
 
 
 class PreferMakePrivate(TrainChooser, MoveChooser, PathAndTrainChooser, PlayChooser):
+    """
+    An implementation of TrainChooser, MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will try to play on your own train if it's currently public.
+    """
+
     def choose_plays(self, game_state: BotGameState, plays):
         if not game_state.my_train.is_public:
             return plays

@@ -5,6 +5,10 @@ from src.bots.strategy.Strategy import Strategy
 
 
 class Random(Strategy):
+    """
+    A Strategy that just picks moves at random.
+    """
+
     def choose_train_for_path(self, game_state: BotGameState, path: Path, used_trains=None):
         trains = game_state.trains_for_number[path.start]
         shuffle(trains)
@@ -13,7 +17,7 @@ class Random(Strategy):
                 return train
         return None
 
-    def choose_move(self, moves, game_state: BotGameState):
+    def choose_move(self, game_state: BotGameState, moves):
         if len(moves) > 0:
             shuffle(moves)
             return moves.pop()
@@ -27,7 +31,7 @@ class Random(Strategy):
             return path, train
         return None
 
-    def choose_play(self, plays, game_state: BotGameState):
+    def choose_play(self, game_state: BotGameState, plays):
         if len(plays) > 0:
             shuffle(plays)
             return plays.pop()

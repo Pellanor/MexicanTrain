@@ -5,6 +5,10 @@ from src.bots.strategy.PlayChooser import PlayChooser
 
 
 class PreferDemandSatisfaction(MoveChooser, PathAndTrainChooser, PlayChooser):
+    """
+    An implementation of MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will try to end with a double; a domino that demands satisfaction.
+    """
     def choose_plays(self, game_state: BotGameState, plays):
         chosen_plays = [play for play in plays if play.demands_satisfaction]
         if len(chosen_plays) > 0:

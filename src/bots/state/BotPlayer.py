@@ -3,6 +3,10 @@ from src.Train import Train
 
 
 class BotPlayer(tuple):
+    """
+    The BotPlayer contains data accessible to bots on a given Player.
+    The Bot cannot modify the Player by modifying the BotPlayer.
+    """
 
     @property
     def player_id(self):

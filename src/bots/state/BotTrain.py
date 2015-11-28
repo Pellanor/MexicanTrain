@@ -6,6 +6,10 @@ from src.Train import Train
 
 
 class BotTrain:
+    """
+    The BotPlayer contains data accessible to bots on a given Player.
+    The Bot cannot modify the Player by modifying the BotPlayer.
+    """
 
     def __init__(self, train: Train, player: Player):
         self.identity = train.identity
@@ -15,9 +19,17 @@ class BotTrain:
         self.cars = copy(train.cars)
         self.requires = train.requires
         self.demands_satisfaction = train.demands_satisfaction
-        self.owner_tile_count = len(player.dominoes)
+        if player is not None:
+            self.owner_tile_count = len(player.dominoes)
+        else:
+            self.owner_tile_count = 0
 
-    def play(self, domino: Domino):
+    def play(self, domino: Domino) -> bool:
+        """
+        Add a domino to the current train, updating internal state as necessary.
+        :param domino: the Domino to add
+        :return: a boolean indicating if the domino was added successfully
+        """
         if not domino.contains(self.requires):
             return False
         self.cars.append(domino)

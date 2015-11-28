@@ -6,16 +6,39 @@ from src.bots.strategy.PlayChooser import PlayChooser
 
 
 class PreferPlayed(MoveChooser, PlayChooser, PathAndTrainChooser, metaclass=abc.ABCMeta):
+    """
+    An implementation of MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will try to end a train with tiles of the specified number.
+    """
+
     @abc.abstractmethod
-    def played_numb_from_moves(self, game_state: BotGameState, moves):
+    def played_numb_from_moves(self, game_state: BotGameState, moves) -> int:
+        """
+        Method to determine which number the train should end on
+        :param game_state: The BotGameState for the current turn
+        :param moves: The moves that are been chosen between
+        :return: The desired end number
+        """
         return
 
     @abc.abstractmethod
-    def played_numb_from_paths(self, game_state, paths):
+    def played_numb_from_paths(self, game_state, paths) -> int:
+        """
+        Method to determine which number the train should end on
+        :param game_state: The BotGameState for the current turn
+        :param paths: The paths that are been chosen between
+        :return: The desired end number
+        """
         return
 
     @abc.abstractmethod
-    def played_numb_from_plays(self, game_state, paths):
+    def played_numb_from_plays(self, game_state, plays) -> int:
+        """
+        Method to determine which number the train should end on
+        :param game_state: The BotGameState for the current turn
+        :param plays: The plays that are been chosen between
+        :return: The desired end number
+        """
         return
 
     def choose_plays(self, game_state: BotGameState, plays):

@@ -1,12 +1,21 @@
 from src.bots.BaseBot import BaseBot
 from src.bots.state.BotGameState import BotGameState, BotMove
+from src.bots.strategy import Strategy
 from src.bots.strategy.Random import Random
 
 
 class LongBot(BaseBot):
+    """
+    A Bot which attempts to play the longest path it can on the first turn.
+    """
+
     first_turn_moves = []
 
-    def __init__(self, strategy=Random()):
+    def __init__(self, strategy: Strategy=Random()):
+        """
+        Create a LongBot following the specified strategy.
+        :param strategy: The Strategy to use.
+        """
         super().__init__()
         self.strategy = strategy
 
@@ -14,8 +23,8 @@ class LongBot(BaseBot):
     def get_move(self, game_state: BotGameState):
         if self.turn == 0:
             if len(self.first_turn_moves) == 0:
-                self.first_turn_moves = self.get_move_list_for_longest_paths_from(game_state.get_playable_numbers(),
-                                                                                  game_state, self.strategy)
+                self.first_turn_moves = self.get_move_list_for_longest_paths_from(game_state, self.strategy,
+                                                                                  game_state.get_playable_numbers())
             if len(self.first_turn_moves) > 0:
                 move = self.first_turn_moves.pop(0)
                 return move

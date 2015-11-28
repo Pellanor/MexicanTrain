@@ -8,6 +8,12 @@ from src.bots.strategy.TrainChooser import TrainChooser
 
 
 class PreferRandom(TrainChooser, MoveChooser, PathAndTrainChooser, PlayChooser):
+    """
+    An implementation of TrainChooser, MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will just pick at random.
+    Every Preference chain should end with PreferRandom to ensure that only a single result is selected.
+    """
+
     def choose_plays(self, game_state: BotGameState, plays):
         shuffle(plays)
         return [plays.pop()]

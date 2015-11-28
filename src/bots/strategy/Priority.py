@@ -9,6 +9,11 @@ from src.bots.strategy.TrainChooser import TrainChooser
 
 
 class Priority(Strategy):
+    """
+    A Strategy which will select moves by running them through a priority chain.
+    This chain will filter out results based on the various preferences.
+    """
+
     def __init__(self, priority_chain):
         self.priority_chain = priority_chain
 
@@ -22,7 +27,7 @@ class Priority(Strategy):
                     return possible_trains[0]
         raise RuntimeError("Priority Strategy didn't choose a train!\n {}".format(self.priority_chain))
 
-    def choose_move(self, moves, game_state: BotGameState):
+    def choose_move(self, game_state: BotGameState, moves):
         possible_moves = copy(moves)
         for priority in self.priority_chain:
             if isinstance(priority, MoveChooser().__class__):
@@ -42,7 +47,7 @@ class Priority(Strategy):
                     return possible_paths[0], possible_trains[0]
         raise RuntimeError("Priority Strategy didn't choose a path!\n {}".format(self.priority_chain))
 
-    def choose_play(self, plays, game_state: BotGameState):
+    def choose_play(self, game_state: BotGameState, plays):
         possible_plays = copy(plays)
         for priority in self.priority_chain:
             if isinstance(priority, PlayChooser().__class__):

@@ -10,5 +10,5 @@ class MoveBot(BaseBot):
         self.strategy = strategy
 
     def get_move(self, game_state: BotGameState):
-        return self.strategy.choose_move(game_state.get_all_valid_moves(), game_state)
+        return self.strategy.choose_move(game_state, game_state.get_all_valid_moves())
 

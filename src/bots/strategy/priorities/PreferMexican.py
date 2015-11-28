@@ -6,6 +6,11 @@ from src.bots.strategy.TrainChooser import TrainChooser
 
 
 class PreferMexican(MoveChooser, TrainChooser, PathAndTrainChooser, PlayChooser):
+    """
+    An implementation of TrainChooser, MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will try to play on the mexican train.
+    """
+
     def choose_plays(self, game_state: BotGameState, plays):
         target_start = game_state.mexican_train.requires
         chosen_plays = [play for play in plays if target_start in play.starts_required]

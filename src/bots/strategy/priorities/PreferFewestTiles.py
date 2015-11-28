@@ -5,11 +5,20 @@ from src.bots.strategy.PlayChooser import PlayChooser
 from src.bots.strategy.TrainChooser import TrainChooser
 
 
-def get_fewest(game_state: BotGameState):
+def get_fewest(game_state: BotGameState) -> int:
+    """
+    Get's the lowest number of remaining tiles.
+    :param game_state: The BotGameState for the current turn
+    :return: the lowest number of remaining tiles
+    """
     return min([player.tile_count for player in game_state.players if not player.is_me])
 
 
 class PreferFewestTiles(TrainChooser, MoveChooser, PathAndTrainChooser, PlayChooser):
+    """
+    An implementation of TrainChooser, MoveChooser, PathAndTrainChooser, and PlayChooser.
+    This preference will try to play on the train of whoever has the fewest dominoes remaining in their hand.
+    """
     def choose_plays(self, game_state: BotGameState, plays):
         target_starts = set([train.requires for train in self.choose_trains(game_state, game_state.playable_trains)])
         chosen_plays = [play for play in plays if len(set(play.starts_required).intersection(target_starts)) > 0]
