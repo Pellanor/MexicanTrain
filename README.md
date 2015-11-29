@@ -26,7 +26,7 @@ Summary of rules:
 
 Bots!
 ======
-There are a few different bots that are currently implemented. All extend [BaseBot](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/BaseBot.py)
+There are a few different bots that are currently implemented. All extend [BaseBot](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/BaseBot.py).
 * [MoveBot](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/MoveBot.py) Places one move at a time, with no advanced planning.
 * [LongBot](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/LongBot.py) Places the longest possible train on the first turn.
 * [FatBot](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/FatBot.py) Places as many dominoe sas possible on the first turn.
@@ -36,3 +36,13 @@ All bots are implemented using the strategy patern. They can provide an implemen
 The [Prioirty](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/strategy/Priority.py) [Strategy](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/strategy/strategy.py) uses a priority chain to apply a sequesnce of filters to determine which play is preferable.
 
 Bots use the [BotGameState](https://github.com/Pellanor/MexicanTrain/blob/master/src/bots/state/BotGameState.py) to read the game state without being able to write to it. It also includes a number functions to provide additional insight into the state of the game.
+
+NetworkX
+======
+The bots make use of [NetworkX](https://networkx.github.io/) for handy graph analysis. You'll need to install it if you want to run the program.
+
+Here's a image showing the layout of a graph in the application:
+
+![Domioes to Graph](https://raw.githubusercontent.com/Pellanor/MexicanTrain/master/dominoes_graph.png)
+
+As you can see, each domino is represented as an edge of the graph.
